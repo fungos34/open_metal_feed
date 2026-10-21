@@ -1,0 +1,13 @@
+<odoo>
+    <data noupdate="1">
+        <record id="ir_cron_fetch_open_metal_prices" model="ir.cron">
+            <field name="name">Metal prices: free live collection</field>
+            <field name="model_id" ref="model_open_metal_price"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_fetch_prices()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,137 @@
+<odoo>
+    <record id="view_open_metal_price_kanban" model="ir.ui.view">
+        <field name="name">open.metal.asset.kanban</field>
+        <field name="model">open.metal.asset</field>
+        <field name="arch" type="xml">
+            <kanban create="false" edit="false" delete="false">
+                <field name="conversion_state"/>
+                <field name="latest_id"/>
+                <field name="company_currency_id"/>
+                <field name="source_currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="p-3">
+                            <h3><field name="name"/> (<field name="symbol"/>)</h3>
+                            <field name="status" widget="badge"/>
+                            <div class="fs-2 my-3" t-if="record.conversion_state.raw_value === 'ready'">
+                                <field name="company_price" widget="monetary"
+                                       options="{'currency_field': 'company_currency_id'}"/>
+                            </div>
+                            <div class="text-warning my-3" t-else="">
+                                <field name="conversion_state"/>
+                            </div>
+                            <div t-if="record.latest_id.raw_value">Source: <field name="source_price" widget="monetary"
+                                               options="{'currency_field': 'source_currency_id'}"/></div>
+                            <div class="text-muted"><field name="unit"/></div>
+                            <div class="mt-2">Market timestamp: <field name="updated_at"/></div>
+                            <div>Retrieved at: <field name="fetched_at"/></div>
+                            <div class="text-danger"><field name="last_error"/></div>
+                            <button name="action_open_history" type="object"
+                                    class="btn btn-link mt-2">Price history</button>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_open_metal_asset_list" model="ir.ui.view">
+        <field name="name">open.metal.asset.list</field>
+        <field name="model">open.metal.asset</field>
+        <field name="arch" type="xml">
+            <list delete="false" decoration-danger="status == 'error'" decoration-warning="status == 'stale'">
+                <header>
+                    <button name="action_refresh" type="object" string="Refresh prices" display="always"
+                            groups="open_metal_feed.group_metal_feed_manager"/>
+                </header>
+                <field name="name"/>
+                <field name="symbol"/>
+                <field name="active" optional="hide"/>
+                <field name="status"/>
+                <field name="company_price" widget="monetary"
+                       options="{'currency_field': 'company_currency_id'}"
+                       invisible="conversion_state != 'ready'"/>
+                <field name="company_currency_id"/>
+                <field name="conversion_state"/>
+                <field name="updated_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_open_metal_asset_form" model="ir.ui.view">
+        <field name="name">open.metal.asset.form</field>
+        <field name="model">open.metal.asset</field>
+        <field name="arch" type="xml">
+            <form delete="false">
+                <header>
+                    <button name="action_refresh" type="object" string="Refresh prices"
+                            groups="open_metal_feed.group_metal_feed_manager"/>
+                    <button name="action_open_history" type="object" string="Price history"/>
+                    <button name="action_open_source_history" type="object" string="Source observations"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="status">
+                        Prices use the provider's unverified pricing unit, not an assumed ounce or gram.
+                        History is collected locally. No paid historical API is used.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="symbol" readonly="id"/>
+                            <field name="active"/>
+                            <field name="unit"/>
+                            <field name="status"/>
+                        </group>
+                        <group string="Current company valuation">
+                            <field name="company_currency_id"/>
+                            <field name="conversion_state"/>
+                            <field name="company_price" widget="monetary"
+                                   options="{'currency_field': 'company_currency_id'}"
+                                   invisible="conversion_state != 'ready'"/>
+                            <field name="conversion_error" invisible="conversion_state == 'ready'"/>
+                        </group>
+                    </group>
+                    <group string="Provider observation">
+                        <field name="source_currency_id"/>
+                        <field name="source_price" widget="monetary"
+                               options="{'currency_field': 'source_currency_id'}"/>
+                        <field name="updated_at"/>
+                        <field name="fetched_at"/>
+                    </group>
+                    <group string="Collection status">
+                        <field name="last_attempt_at"/>
+                        <field name="last_success_at"/>
+                        <field name="next_fetch_at"/>
+                        <field name="last_error"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_open_metal_asset_search" model="ir.ui.view">
+        <field name="name">open.metal.asset.search</field>
+        <field name="model">open.metal.asset</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="symbol"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_open_metal_dashboard" model="ir.actions.act_window">
+        <field name="name">Precious Metal Prices</field>
+        <field name="res_model">open.metal.asset</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p>Prices are collected every five minutes by default, using only the free live endpoint.</p>
+            <p>Open a metal to view local history or refresh prices. Currency valuations use your current company.</p>
+        </field>
+    </record>
+    <menuitem id="menu_open_metal_root" name="Metal Feed" sequence="99"
+              groups="base.group_user" web_icon="base,static/description/icon.png"/>
+    <menuitem id="menu_open_metal_dashboard" name="Live Overview" parent="menu_open_metal_root"
+              action="action_open_metal_dashboard" sequence="1"/>
+</odoo>

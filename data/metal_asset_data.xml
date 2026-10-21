@@ -1,0 +1,19 @@
+<odoo noupdate="1">
+    <record id="asset_gold" model="open.metal.asset">
+        <field name="name">Gold</field>
+        <field name="symbol">XAU</field>
+    </record>
+    <record id="asset_silver" model="open.metal.asset">
+        <field name="name">Silver</field>
+        <field name="symbol">XAG</field>
+    </record>
+    <record id="asset_platinum" model="open.metal.asset">
+        <field name="name">Platinum</field>
+        <field name="symbol">XPT</field>
+    </record>
+    <record id="asset_palladium" model="open.metal.asset">
+        <field name="name">Palladium</field>
+        <field name="symbol">XPD</field>
+        <field name="active" eval="False"/>
+    </record>
+</odoo>

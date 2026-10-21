@@ -1,0 +1,14 @@
+<odoo>
+    <record id="group_metal_feed_manager" model="res.groups">
+        <field name="name">Metal Feed Manager</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="base.group_system" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_metal_feed_manager'))]"/>
+    </record>
+    <record id="metal_valuation_company_rule" model="ir.rule">
+        <field name="name">Metal valuations: allowed companies</field>
+        <field name="model_id" ref="model_open_metal_valuation"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

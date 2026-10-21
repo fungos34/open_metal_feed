@@ -1,0 +1,163 @@
+<odoo>
+    <record id="view_metal_observation_list" model="ir.ui.view">
+        <field name="name">open.metal.price.list</field>
+        <field name="model">open.metal.price</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false">
+                <field name="asset_id"/>
+                <field name="price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id"/>
+                <field name="unit"/>
+                <field name="updated_at"/>
+                <field name="fetched_at"/>
+                <field name="source_kind"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_metal_observation_form" model="ir.ui.view">
+        <field name="name">open.metal.price.form</field>
+        <field name="model">open.metal.price</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" delete="false">
+                <sheet>
+                    <div class="alert alert-warning" role="status" invisible="source_kind != 'legacy'">
+                        Legacy snapshot: the market timestamp is the original retrieval time,
+                        not a verified provider timestamp.
+                    </div>
+                    <group>
+                        <field name="asset_id"/>
+                        <field name="price"/>
+                        <field name="currency_id"/>
+                        <field name="unit"/>
+                        <field name="updated_at"/>
+                        <field name="fetched_at"/>
+                        <field name="source_kind"/>
+                        <field name="provider_key"/>
+                    </group>
+                    <group string="Original legacy values" invisible="source_kind != 'legacy'">
+                        <field name="name"/>
+                        <field name="symbol"/>
+                        <field name="currency"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_metal_observation_search" model="ir.ui.view">
+        <field name="name">open.metal.price.search</field>
+        <field name="model">open.metal.price</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="asset_id"/>
+                <field name="currency_id"/>
+                <filter name="date" string="Market timestamp" date="updated_at"/>
+                <filter name="legacy" string="Legacy snapshots" domain="[('source_kind', '=', 'legacy')]"/>
+                <group>
+                    <filter name="asset" string="Metal" context="{'group_by': 'asset_id'}"/>
+                    <filter name="currency" string="Currency" context="{'group_by': 'currency_id'}"/>
+                    <filter name="day" string="Day" context="{'group_by': 'updated_at:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="view_metal_valuation_graph" model="ir.ui.view">
+        <field name="name">open.metal.valuation.graph</field>
+        <field name="model">open.metal.valuation</field>
+        <field name="arch" type="xml">
+            <graph string="Average observed price" type="line" disable_linking="1">
+                <field name="updated_at" interval="day"/>
+                <field name="price" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <record id="view_metal_valuation_pivot" model="ir.ui.view">
+        <field name="name">open.metal.valuation.pivot</field>
+        <field name="model">open.metal.valuation</field>
+        <field name="arch" type="xml">
+            <pivot string="Average observed price">
+                <field name="updated_at" type="row" interval="day"/>
+                <field name="price" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="view_metal_valuation_list" model="ir.ui.view">
+        <field name="name">open.metal.valuation.list</field>
+        <field name="model">open.metal.valuation</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false">
+                <field name="asset_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="currency_id"/>
+                <field name="price" widget="monetary" options="{'currency_field': 'currency_id'}"
+                       invisible="state != 'ready'"/>
+                <field name="unit"/>
+                <field name="updated_at"/>
+                <field name="source_kind" optional="hide"/>
+                <field name="state"/>
+                <field name="error" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_metal_valuation_form" model="ir.ui.view">
+        <field name="name">open.metal.valuation.form</field>
+        <field name="model">open.metal.valuation</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" delete="false">
+                <sheet>
+                    <group>
+                        <field name="asset_id"/>
+                        <field name="observation_id"/>
+                        <field name="company_id"/>
+                        <field name="currency_id"/>
+                        <field name="price" invisible="state != 'ready'"/>
+                        <field name="unit"/>
+                        <field name="updated_at"/>
+                        <field name="source_kind"/>
+                        <field name="state"/>
+                        <field name="error"/>
+                    </group>
+                    <group string="Conversion provenance">
+                        <field name="conversion_rate"/>
+                        <field name="conversion_date"/>
+                        <field name="converted_at"/>
+                        <field name="rate_provenance"/>
+                        <field name="last_attempt_at"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_metal_valuation_search" model="ir.ui.view">
+        <field name="name">open.metal.valuation.search</field>
+        <field name="model">open.metal.valuation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="asset_id"/>
+                <field name="currency_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <filter name="date" string="Market timestamp" date="updated_at"/>
+                <filter name="pending" string="Conversion unavailable" domain="[('state', '=', 'unavailable')]"/>
+                <filter name="legacy" string="Legacy snapshots" domain="[('source_kind', '=', 'legacy')]"/>
+                <group>
+                    <filter name="day" string="Day" context="{'group_by': 'updated_at:day'}"/>
+                    <filter name="week" string="Week" context="{'group_by': 'updated_at:week'}"/>
+                    <filter name="month" string="Month" context="{'group_by': 'updated_at:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_metal_source_observations" model="ir.actions.act_window">
+        <field name="name">Source Observations</field>
+        <field name="res_model">open.metal.price</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_metal_valuations" model="ir.actions.act_window">
+        <field name="name">Company Valuations</field>
+        <field name="res_model">open.metal.valuation</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="menu_metal_sources" name="Source Observations" parent="menu_open_metal_root"
+              action="action_metal_source_observations" sequence="2"/>
+    <menuitem id="menu_metal_valuations" name="Company Valuations" parent="menu_open_metal_root"
+              action="action_metal_valuations" sequence="3"/>
+</odoo>

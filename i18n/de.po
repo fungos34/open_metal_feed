@@ -1,0 +1,558 @@
+# Translation of Open Metal Feed.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo 19.0\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: open_metal_feed
+#: model:open.metal.asset,name:open_metal_feed.asset_gold
+msgid "Gold"
+msgstr "Gold"
+
+#. module: open_metal_feed
+#: model:open.metal.asset,name:open_metal_feed.asset_silver
+msgid "Silver"
+msgstr "Silber"
+
+#. module: open_metal_feed
+#: model:open.metal.asset,name:open_metal_feed.asset_platinum
+msgid "Platinum"
+msgstr "Platin"
+
+#. module: open_metal_feed
+#: model:open.metal.asset,name:open_metal_feed.asset_palladium
+msgid "Palladium"
+msgstr "Palladium"
+
+#. module: open_metal_feed
+#: model:ir.ui.menu,name:open_metal_feed.menu_open_metal_root
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "Metal Feed"
+msgstr "Metall-Feed"
+
+#. module: open_metal_feed
+#: model:ir.ui.menu,name:open_metal_feed.menu_open_metal_dashboard
+msgid "Live Overview"
+msgstr "Live-Übersicht"
+
+#. module: open_metal_feed
+#: model:ir.actions.act_window,name:open_metal_feed.action_open_metal_dashboard
+msgid "Precious Metal Prices"
+msgstr "Edelmetallkurse"
+
+#. module: open_metal_feed
+#: model:ir.ui.menu,name:open_metal_feed.menu_metal_sources
+#: model:ir.actions.act_window,name:open_metal_feed.action_metal_source_observations
+msgid "Source Observations"
+msgstr "Quellbeobachtungen"
+
+#. module: open_metal_feed
+#: model:ir.ui.menu,name:open_metal_feed.menu_metal_valuations
+#: model:ir.actions.act_window,name:open_metal_feed.action_metal_valuations
+msgid "Company Valuations"
+msgstr "Unternehmensbewertungen"
+
+#. module: open_metal_feed
+#: model:ir.ui.menu,name:open_metal_feed.menu_metal_settings
+msgid "Settings"
+msgstr "Einstellungen"
+
+#. module: open_metal_feed
+#: model:ir.actions.act_window,name:open_metal_feed.action_metal_settings
+msgid "Metal Feed Settings"
+msgstr "Metall-Feed-Einstellungen"
+
+#. module: open_metal_feed
+#: model:res.groups,name:open_metal_feed.group_metal_feed_manager
+msgid "Metal Feed Manager"
+msgstr "Metall-Feed-Verwalter"
+
+#. module: open_metal_feed
+#: model:ir.cron,cron_name:open_metal_feed.ir_cron_fetch_open_metal_prices
+msgid "Metal prices: free live collection"
+msgstr "Metallkurse: kostenlose Live-Abfrage"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_list
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
+msgid "Refresh prices"
+msgstr "Kurse aktualisieren"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_price_kanban
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
+msgid "Price history"
+msgstr "Kursverlauf"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
+msgid "Source observations"
+msgstr "Quellbeobachtungen"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_price_kanban
+msgid "Source:"
+msgstr "Quelle:"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_price_kanban
+msgid "Market timestamp:"
+msgstr "Marktzeitpunkt:"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_price_kanban
+msgid "Retrieved at:"
+msgstr "Abgerufen am:"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
+msgid "Current company valuation"
+msgstr "Bewertung im aktuellen Unternehmen"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
+msgid "Provider observation"
+msgstr "Anbieterbeobachtung"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
+msgid "Collection status"
+msgstr "Abrufstatus"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
+msgid "Prices use the provider's unverified pricing unit, not an assumed ounce or gram. History is collected locally. No paid historical API is used."
+msgstr "Die Kurse verwenden die ungeprüfte Preiseinheit des Anbieters, nicht eine angenommene Unze oder Gramm. Der Verlauf wird lokal erfasst. Es wird keine kostenpflichtige historische API verwendet."
+
+#. module: open_metal_feed
+#: model_terms:ir.actions.act_window,help:open_metal_feed.action_open_metal_dashboard
+msgid "Prices are collected every five minutes by default, using only the free live endpoint."
+msgstr "Die Kurse werden standardmäßig alle fünf Minuten ausschließlich über den kostenlosen Live-Endpunkt abgerufen."
+
+#. module: open_metal_feed
+#: model_terms:ir.actions.act_window,help:open_metal_feed.action_open_metal_dashboard
+msgid "Open a metal to view local history or refresh prices. Currency valuations use your current company."
+msgstr "Öffnen Sie ein Metall, um den lokalen Verlauf anzuzeigen oder Kurse zu aktualisieren. Währungsbewertungen verwenden Ihr aktuelles Unternehmen."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_search
+msgid "Archived"
+msgstr "Archiviert"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_form
+msgid "Legacy snapshot: the market timestamp is the original retrieval time, not a verified provider timestamp."
+msgstr "Altbestand: Der Marktzeitpunkt entspricht dem ursprünglichen Abrufzeitpunkt, nicht einem geprüften Anbieterzeitpunkt."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_form
+msgid "Original legacy values"
+msgstr "Ursprüngliche Bestandswerte"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_search
+msgid "Legacy snapshots"
+msgstr "Altbestandsaufnahmen"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
+msgid "Metal"
+msgstr "Metall"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_search
+msgid "Day"
+msgstr "Tag"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_search
+msgid "Week"
+msgstr "Woche"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_search
+msgid "Month"
+msgstr "Monat"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_graph
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_pivot
+msgid "Average observed price"
+msgstr "Durchschnittlicher beobachteter Kurs"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_form
+msgid "Conversion provenance"
+msgstr "Umrechnungsnachweis"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "Free-only collection"
+msgstr "Ausschließlich kostenloser Abruf"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+#: model:ir.model.fields,field_description:open_metal_feed.field_res_company__metal_feed_enabled
+#: model:ir.model.fields,field_description:open_metal_feed.field_res_config_settings__metal_feed_enabled
+msgid "Collect metal prices"
+msgstr "Metallkurse abrufen"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "Create valuations in this company's currency. Public USD observations are shared between companies."
+msgstr "Bewertungen in der Währung dieses Unternehmens erstellen. Öffentliche USD-Beobachtungen werden unternehmensübergreifend geteilt."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "Collection interval"
+msgstr "Abrufintervall"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_res_config_settings__metal_feed_interval_minutes
+msgid "Collection interval (minutes)"
+msgstr "Abrufintervall (Minuten)"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "Global scheduler interval in minutes. Minimum one minute; requests are cached for at least 30 seconds."
+msgstr "Globales Zeitplanintervall in Minuten. Mindestens eine Minute; Anfragen werden mindestens 30 Sekunden zwischengespeichert."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "Free live prices only"
+msgstr "Nur kostenlose Live-Kurse"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "No API key, paid endpoints, premium grouping, or external exchange-rate subscription is used. Historical charts use locally stored observations."
+msgstr "Es werden keine API-Schlüssel, kostenpflichtigen Endpunkte, Premium-Gruppierungen oder externen Wechselkursabonnements verwendet. Verlaufsdiagramme verwenden lokal gespeicherte Beobachtungen."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "Configure dated currency rates in Odoo before using non-USD company valuations. Missing rates are reported, never replaced by a rate of 1."
+msgstr "Hinterlegen Sie datierte Wechselkurse in Odoo, bevor Sie Unternehmensbewertungen außerhalb von USD verwenden. Fehlende Kurse werden gemeldet und niemals durch einen Kurs von 1 ersetzt."
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__name
+msgid "Name"
+msgstr "Name"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__symbol
+msgid "Symbol"
+msgstr "Symbol"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__active
+msgid "Active"
+msgstr "Aktiv"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__status
+msgid "Status"
+msgstr "Status"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__asset_id
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__asset_id
+msgid "Asset"
+msgstr "Metall"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__price
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__source_price
+msgid "Source price"
+msgstr "Quellkurs"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__company_price
+msgid "Company price"
+msgstr "Unternehmenskurs"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__source_currency_id
+msgid "Source Currency"
+msgstr "Quellwährung"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__company_currency_id
+msgid "Company Currency"
+msgstr "Unternehmenswährung"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__currency_id
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__currency_id
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
+msgid "Currency"
+msgstr "Währung"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__updated_at
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__updated_at
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__updated_at
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_search
+msgid "Market timestamp"
+msgstr "Marktzeitpunkt"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__fetched_at
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__fetched_at
+msgid "Retrieved at"
+msgstr "Abgerufen am"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__unit
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__unit
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__unit
+msgid "Pricing unit"
+msgstr "Preiseinheit"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_price__unit__provider_unit
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_asset__unit__provider_unit
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_valuation__unit__provider_unit
+msgid "Provider unit (unverified)"
+msgstr "Anbietereinheit (ungeprüft)"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__source_kind
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__source_kind
+msgid "Source Kind"
+msgstr "Quelltyp"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_price__source_kind__live
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_valuation__source_kind__live
+msgid "Live observation"
+msgstr "Live-Beobachtung"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_price__source_kind__legacy
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_valuation__source_kind__legacy
+msgid "Legacy snapshot"
+msgstr "Altbestandsaufnahme"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_asset__status__waiting
+msgid "Waiting"
+msgstr "Wartend"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_asset__status__fresh
+msgid "Fresh"
+msgstr "Aktuell"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_asset__status__stale
+msgid "Stale"
+msgstr "Veraltet"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_asset__status__error
+msgid "Fetch failed"
+msgstr "Abruf fehlgeschlagen"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_asset__conversion_state__ready
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_valuation__state__ready
+msgid "Available"
+msgstr "Verfügbar"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_asset__conversion_state__unavailable
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_valuation__state__unavailable
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_search
+msgid "Conversion unavailable"
+msgstr "Umrechnung nicht verfügbar"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_asset__conversion_state__disabled
+msgid "Disabled"
+msgstr "Deaktiviert"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__conversion_state
+msgid "Conversion State"
+msgstr "Umrechnungsstatus"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__conversion_error
+msgid "Conversion Error"
+msgstr "Umrechnungsfehler"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__last_attempt_at
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__last_attempt_at
+msgid "Last Attempt At"
+msgstr "Letzter Versuch"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__last_success_at
+msgid "Last Success At"
+msgstr "Letzter erfolgreicher Abruf"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__next_fetch_at
+msgid "Next Fetch At"
+msgstr "Nächster möglicher Abruf"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__last_error
+msgid "Last Error"
+msgstr "Letzter Fehler"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__name
+msgid "Legacy name"
+msgstr "Ursprünglicher Name"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__symbol
+msgid "Legacy symbol"
+msgstr "Ursprüngliches Symbol"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__currency
+msgid "Legacy currency"
+msgstr "Ursprüngliche Währung"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__provider_key
+msgid "Provider Key"
+msgstr "Anbieterkennung"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__observation_id
+msgid "Observation"
+msgstr "Beobachtung"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__company_id
+msgid "Company"
+msgstr "Unternehmen"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__price
+msgid "Price"
+msgstr "Kurs"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__state
+msgid "State"
+msgstr "Status"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__error
+msgid "Error"
+msgstr "Fehler"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__conversion_rate
+msgid "Conversion Rate"
+msgstr "Umrechnungskurs"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__conversion_date
+msgid "Conversion Date"
+msgstr "Umrechnungsdatum"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__converted_at
+msgid "Converted At"
+msgstr "Umgerechnet am"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__rate_provenance
+msgid "Rate Provenance"
+msgstr "Wechselkursnachweis"
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_price.py:0
+msgid "Only feed managers may refresh prices."
+msgstr "Nur Feed-Verwalter dürfen Kurse aktualisieren."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_price.py:0
+msgid "Metal feed"
+msgstr "Metall-Feed"
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_price.py:0
+msgid "Another refresh is running. No API request was made."
+msgstr "Eine andere Aktualisierung läuft bereits. Es wurde keine API-Anfrage gestellt."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_price.py:0
+msgid "Collection is disabled for all companies."
+msgstr "Der Abruf ist für alle Unternehmen deaktiviert."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_price.py:0
+#, python-format
+msgid "%(attempted)s requests attempted; %(failed)s failed. Cached prices were reused where applicable. Check each asset's status."
+msgstr "%(attempted)s Anfragen versucht; %(failed)s fehlgeschlagen. Vorhandene Kurse wurden nach Möglichkeit wiederverwendet. Prüfen Sie den Status jedes Metalls."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_asset.py:0
+msgid "Awaiting collection or suitable exchange rates."
+msgstr "Warten auf einen Abruf oder geeignete Wechselkurse."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_asset.py:0
+#, python-format
+msgid "Price history: %(metal)s (%(currency)s, %(company)s)"
+msgstr "Kursverlauf: %(metal)s (%(currency)s, %(company)s)"
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_asset.py:0
+#, python-format
+msgid "Source observations: %s"
+msgstr "Quellbeobachtungen: %s"
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_valuation.py:0
+#, python-format
+msgid "Missing valid %(currency)s exchange rate on or before %(date)s."
+msgstr "Es fehlt ein gültiger Wechselkurs für %(currency)s am oder vor dem %(date)s."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_valuation.py:0
+msgid "Currency conversion returned an invalid value."
+msgstr "Die Währungsumrechnung lieferte einen ungültigen Wert."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_valuation.py:0
+msgid "Same currency; no conversion."
+msgstr "Gleiche Währung; keine Umrechnung."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/res_config_settings.py:0
+msgid "The collection interval must be at least one minute."
+msgstr "Das Abrufintervall muss mindestens eine Minute betragen."
+
+#. module: open_metal_feed
+#: model:ir.model.constraint,message:open_metal_feed.constraint_open_metal_asset_symbol_unique
+msgid "The metal symbol must be unique."
+msgstr "Das Metallsymbol muss eindeutig sein."
+
+#. module: open_metal_feed
+#: model:ir.model.constraint,message:open_metal_feed.constraint_open_metal_price_provider_key_unique
+msgid "This provider observation has already been collected."
+msgstr "Diese Anbieterbeobachtung wurde bereits erfasst."
+
+#. module: open_metal_feed
+#: model:ir.model.constraint,message:open_metal_feed.constraint_open_metal_valuation_valuation_unique
+msgid "This company valuation already exists."
+msgstr "Diese Unternehmensbewertung ist bereits vorhanden."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/metal_asset.py:0
+msgid "A metal's symbol cannot be changed. Archive it instead."
+msgstr "Das Symbol eines Metalls kann nicht geändert werden. Archivieren Sie es stattdessen."

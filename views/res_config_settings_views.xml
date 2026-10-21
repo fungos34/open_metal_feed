@@ -1,0 +1,39 @@
+<odoo>
+    <record id="res_config_settings_view_form_metal" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.metal</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Metal Feed" name="open_metal_feed" groups="base.group_system">
+                    <block title="Free-only collection" name="metal_feed_collection">
+                        <setting string="Collect metal prices" company_dependent="1"
+                                 help="Create valuations in this company's currency. Public USD observations are shared between companies.">
+                            <field name="metal_feed_enabled"/>
+                        </setting>
+                        <setting string="Collection interval"
+                                 help="Global scheduler interval in minutes. Minimum one minute; requests are cached for at least 30 seconds.">
+                            <field name="metal_feed_interval_minutes"/>
+                        </setting>
+                        <setting string="Free live prices only"
+                                 help="No API key, paid endpoints, premium grouping, or external exchange-rate subscription is used. Historical charts use locally stored observations.">
+                            <div class="text-muted">
+                                Configure dated currency rates in Odoo before using non-USD company valuations.
+                                Missing rates are reported, never replaced by a rate of 1.
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_metal_settings" model="ir.actions.act_window">
+        <field name="name">Metal Feed Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'open_metal_feed'}</field>
+    </record>
+    <menuitem id="menu_metal_settings" name="Settings" parent="menu_open_metal_root"
+              action="action_metal_settings" sequence="99" groups="base.group_system"/>
+</odoo>

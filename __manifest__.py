@@ -1,0 +1,25 @@
+# -*- coding: utf-8 -*-
+{
+    'name': 'Open Metal Price Feed (Free)',
+    'version': '19.0.2.0.0',
+    'summary': 'Free and open precious metals price feed dashboard using gold-api.com',
+    'category': 'Tools',
+    'author': 'Community Developer',
+    'website': 'https://api.gold-api.com',
+    'license': 'LGPL-3',
+    'depends': ['base', 'web', 'base_setup'],
+    'external_dependencies': {'python': ['requests']},
+    'data': [
+        'security/metal_security.xml',
+        'security/ir.model.access.csv',
+        'data/metal_asset_data.xml',
+        'data/ir_cron_data.xml',
+        'views/metal_dashboard_views.xml',
+        'views/metal_history_views.xml',
+        'views/res_config_settings_views.xml',
+    ],
+    'post_init_hook': 'post_init_hook',
+    'installable': True,
+    'application': True,
+    'auto_install': False,
+}
