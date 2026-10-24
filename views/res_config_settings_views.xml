@@ -31,7 +31,7 @@
         <field name="name">Metal Feed Settings</field>
         <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
-        <field name="target">inline</field>
+        <field name="target">current</field>
         <field name="context">{'module': 'open_metal_feed'}</field>
     </record>
     <menuitem id="menu_metal_settings" name="Settings" parent="menu_open_metal_root"
