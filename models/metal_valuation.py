@@ -55,57 +55,77 @@ class OpenMetalValuation(models.Model):
                 valuation.error = False
 
     def _try_convert(self):
+        cache = {}
         for valuation in self.filtered(lambda record: record.state != 'ready'):
-            observation = valuation.observation_id
-            source = observation.currency_id
-            target = valuation.currency_id
-            company = valuation.company_id
-            date = observation.updated_at.date()
-            values = {'last_attempt_at': fields.Datetime.now(), 'conversion_date': date}
-            rates = self.env['res.currency.rate']
-            implicit = self.env['res.currency']
-            if source != target:
-                # Odoo otherwise falls back to future rates or 1.0. Neither is valid here.
-                for currency in source | target:
-                    domain = [('currency_id', '=', currency.id), ('name', '<=', date)]
-                    rate = self.env['res.currency.rate'].search(
-                        domain + [('company_id', '=', company.root_id.id)],
-                        order='name desc, id desc', limit=1,
-                    ) or self.env['res.currency.rate'].search(
-                        domain + [('company_id', '=', False)],
-                        order='name desc, id desc', limit=1,
-                    )
-                    if not rate and currency == company.root_id.currency_id and not self.env[
-                        'res.currency.rate'
-                    ].search_count([
-                        ('currency_id', '=', currency.id),
-                        ('company_id', 'in', [False, company.root_id.id]),
-                    ], limit=1):
+            valuation.write(self._prepare_conversion(
+                valuation.observation_id, valuation.company_id, valuation.currency_id, cache,
+            ))
+
+    @api.model
+    def _prepare_conversion(self, observation, company, target, cache):
+        """Values for converting ``observation`` into ``target``; ``cache`` is shared per batch."""
+        Rate = self.env['res.currency.rate']
+        oldest = cache.setdefault('oldest', {})
+        converted = cache.setdefault('convert', {})
+        source = observation.currency_id
+        root = company.root_id
+        date = observation.updated_at.date()
+        values = {'last_attempt_at': fields.Datetime.now(), 'conversion_date': date}
+        rates = self.env['res.currency.rate']
+        implicit = self.env['res.currency']
+        if source != target:
+            # Odoo otherwise falls back to future rates or 1.0. Neither is valid here.
+            for currency in source | target:
+                key = (currency.id, root.id)
+                if key not in oldest:
+                    scope = [('currency_id', '=', currency.id)]
+                    first = {
+                        company_id: Rate.search(
+                            scope + [('company_id', '=', company_id)],
+                            order='name asc, id asc', limit=1,
+                        ) for company_id in (root.id, False)
+                    }
+                    dates = [rate.name for rate in first.values() if rate]
+                    oldest[key] = min(dates) if dates else None
+                first_date = oldest[key]
+                if not first_date:
+                    if currency == root.currency_id:
                         # Company currency without any rate row is the 1.0 base, as in core.
                         implicit |= currency
                         continue
-                    if not rate or not math.isfinite(rate.rate) or rate.rate <= 0:
-                        values.update({
-                            'error_code': 'missing_rate', 'missing_currency_id': currency.id,
-                        })
-                        break
-                    rates |= rate
-            if 'error_code' not in values:
-                rate = source._convert(1.0, target, company, date, round=False)
-                price = observation.price * rate
-                if not math.isfinite(rate) or rate <= 0 or not math.isfinite(price) or price <= 0:
-                    values.update({'error_code': 'invalid', 'missing_currency_id': False})
+                    rate = Rate
+                elif date < first_date:
+                    rate = Rate
                 else:
-                    provenance = '\n'.join([
-                        f'{item.currency_id.name}: {item.rate!r}; {item.name}; '
-                        f'company={item.company_id.id or "shared"}; rate_id={item.id}'
-                        for item in rates
-                    ] + [f'{item.name}: 1.0; company currency base' for item in implicit])
-                    values.update({
-                        'state': 'ready', 'error_code': False, 'missing_currency_id': False,
-                        'price': price,
-                        'conversion_rate': rate, 'conversion_date': date,
-                        'converted_at': fields.Datetime.now(),
-                        'rate_provenance': provenance or self.env._("Same currency; no conversion."),
-                    })
-            valuation.write(values)
+                    domain = [('currency_id', '=', currency.id), ('name', '<=', date)]
+                    rate = Rate.search(
+                        domain + [('company_id', '=', root.id)], order='name desc, id desc', limit=1,
+                    ) or Rate.search(
+                        domain + [('company_id', '=', False)], order='name desc, id desc', limit=1,
+                    )
+                if not rate or not math.isfinite(rate.rate) or rate.rate <= 0:
+                    values.update({'error_code': 'missing_rate', 'missing_currency_id': currency.id})
+                    return values
+                rates |= rate
+        # Core conversion; its result only depends on the rate records selected above.
+        key = (source.id, target.id, root.id, tuple(rates.ids))
+        if key not in converted:
+            converted[key] = source._convert(1.0, target, company, date, round=False)
+        rate = converted[key]
+        price = observation.price * rate
+        if not math.isfinite(rate) or rate <= 0 or not math.isfinite(price) or price <= 0:
+            values.update({'error_code': 'invalid', 'missing_currency_id': False})
+            return values
+        provenance = '\n'.join([
+            f'{item.currency_id.name}: {item.rate!r}; {item.name}; '
+            f'company={item.company_id.id or "shared"}; rate_id={item.id}'
+            for item in rates
+        ] + [f'{item.name}: 1.0; company currency base' for item in implicit])
+        values.update({
+            'state': 'ready', 'error_code': False, 'missing_currency_id': False,
+            'price': price,
+            'conversion_rate': rate, 'conversion_date': date,
+            'converted_at': fields.Datetime.now(),
+            'rate_provenance': provenance or self.env._("Same currency; no conversion."),
+        })
+        return values

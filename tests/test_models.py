@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import requests
 
 from odoo import Command, fields, sql_db
-from odoo.exceptions import AccessError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase, tagged
 
 _REQUEST = 'odoo.addons.open_metal_feed.models.metal_price.requests.get'
@@ -207,9 +207,10 @@ class TestMetalFeed(TransactionCase):
         self.assertEqual(gold.conversion_state, 'ready')
         self.assertEqual(gold.with_company(self.other_company).company_currency_id, self.eur)
         action = gold.action_open_history()
+        self.assertEqual(action['res_model'], 'open.metal.price')
         self.assertIn(('asset_id', '=', gold.id), action['domain'])
-        self.assertIn(('company_id', '=', self.company.id), action['domain'])
         self.assertIn(('currency_id', '=', self.usd.id), action['domain'])
+        self.assertFalse(gold.show_company_trend)
         self.assertEqual(self.Valuation._fields['price'].aggregator, 'avg')
 
     def test_legacy_snapshots_are_labeled_and_preserved(self):
@@ -311,3 +312,86 @@ class TestMetalFeed(TransactionCase):
         with patch(_REQUEST) as get, self.assertRaises(ValidationError):
             settings.action_metal_feed_test_api_key()
         get.assert_not_called()
+
+    def _history_response(self, rows, status=200):
+        response = MagicMock(status_code=status)
+        response.json.return_value = rows
+        return response
+
+    def test_history_import_is_usd_only_and_deduplicated(self):
+        self.env['ir.config_parameter'].sudo().set_param('open_metal_feed.api_key', 'secret')
+        today = fields.Date.context_today(self.Feed.with_context(tz='UTC'))
+        old, recent = today - timedelta(days=30), today - timedelta(days=2)
+        rows = [{'day': f'{day} 00:00:00', 'avg_price': price}
+                for day, price in ((old, '3000.5'), (recent, '4000'), (today, '4100'))]
+        wizard = self.env['open.metal.history.import'].create({
+            'asset_ids': [Command.set(self.gold.ids)], 'date_from': old, 'date_to': today,
+        })
+        with patch(_REQUEST, return_value=self._history_response(rows)) as get:
+            wizard.action_import()
+        params = get.call_args.kwargs['params']
+        self.assertEqual(get.call_args.kwargs['headers'], {'x-api-key': 'secret'})
+        self.assertEqual((params['symbol'], params['groupBy'], params['aggregation']), ('XAU', 'day', 'avg'))
+        history = self.Feed.search([('asset_id', '=', self.gold.id), ('source_kind', '=', 'history')])
+        self.assertEqual(sorted(history.mapped('price')), [3000.5, 4000.0])  # today is incomplete
+        self.assertEqual(set(history.mapped('currency_id')), {self.usd})
+        self.assertFalse(self.gold.latest_id)
+        self.assertFalse(self.Valuation.search([('observation_id', 'in', history.ids)]))
+        with patch(_REQUEST, return_value=self._history_response(rows)):
+            wizard.action_import()
+        self.assertEqual(
+            self.Feed.search([('asset_id', '=', self.gold.id), ('source_kind', '=', 'history')]), history,
+        )
+
+    def test_trend_in_company_currency_uses_todays_rate(self):
+        stamp = fields.Datetime.now() - timedelta(minutes=1)
+        with patch(_REQUEST, return_value=self._response(stamp)):
+            self.Feed._collect_prices()
+        gold = self.gold.with_company(self.other_company)
+        self.env['res.currency.rate'].search([
+            ('currency_id', 'in', (self.usd | self.eur).ids),
+            ('company_id', 'in', [False, self.other_company.id]),
+        ]).unlink()
+        with self.assertRaises(UserError):
+            gold.action_open_history_company()
+        self.env['res.currency.rate'].create({
+            'currency_id': self.usd.id, 'company_id': self.other_company.id,
+            'name': fields.Date.today(), 'rate': 1.25,
+        })
+        self.assertTrue(gold.show_company_trend)
+        action = gold.action_open_history_company()
+        self.assertIn('EUR', action['name'])
+        Feed = self.Feed.with_company(self.other_company).with_context(action['context'])
+        rows = Feed.formatted_read_group(action['domain'], ['asset_id'], ['price:avg', 'price:max'])
+        self.assertAlmostEqual(rows[0]['price:avg'], 4000.123456 * 0.8)
+        self.assertAlmostEqual(rows[0]['price:max'], 4000.123456 * 0.8)
+        sets = Feed.formatted_read_grouping_sets(action['domain'], [['asset_id']], ['price:avg'])
+        self.assertAlmostEqual(sets[0][0]['price:avg'], 4000.123456 * 0.8)
+        record = Feed.search(action['domain'])
+        self.assertAlmostEqual(record.display_price, 4000.123456 * 0.8)
+        self.assertEqual(record.price, 4000.123456)
+        usd_action = gold.action_open_history()
+        rows = self.Feed.with_context(usd_action['context']).formatted_read_group(
+            usd_action['domain'], ['asset_id'], ['price:avg'])
+        self.assertAlmostEqual(rows[0]['price:avg'], 4000.123456)
+
+    def test_history_cron_requires_key_and_continues_from_last_day(self):
+        self.env['ir.config_parameter'].sudo().set_param('open_metal_feed.api_key', False)
+        with patch(_REQUEST) as get:
+            self.Feed._cron_import_history()
+        get.assert_not_called()
+        self.env['ir.config_parameter'].sudo().set_param('open_metal_feed.api_key', 'secret')
+        with patch(_REQUEST, return_value=self._history_response([])) as get:
+            self.Feed._cron_import_history()
+        self.assertEqual(get.call_count, 1)
+        with patch(_REQUEST, return_value=self._history_response(
+                {'error': 'Invalid API key'}, status=401)):
+            created, errors = self.Feed._import_history(
+                self.gold, fields.Date.today() - timedelta(days=3), fields.Date.today(),
+            )
+        self.assertFalse(created)
+        self.assertEqual(errors, {'XAU': 'HTTP 401'})
+
+    def test_api_key_with_whitespace_is_rejected(self):
+        with self.assertRaises(ValidationError):
+            self.env['res.config.settings'].create({'metal_feed_api_key': 'abc\t24/'})

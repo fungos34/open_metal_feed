@@ -52,12 +52,53 @@
                 <field name="currency_id"/>
                 <filter name="date" string="Market timestamp" date="updated_at"/>
                 <filter name="legacy" string="Legacy snapshots" domain="[('source_kind', '=', 'legacy')]"/>
+                <filter name="history" string="Historical prices" domain="[('source_kind', '=', 'history')]"/>
+                <filter name="live" string="Live observations" domain="[('source_kind', '=', 'live')]"/>
                 <group>
                     <filter name="asset" string="Metal" context="{'group_by': 'asset_id'}"/>
                     <filter name="currency" string="Currency" context="{'group_by': 'currency_id'}"/>
                     <filter name="day" string="Day" context="{'group_by': 'updated_at:day'}"/>
+                    <filter name="week" string="Week" context="{'group_by': 'updated_at:week'}"/>
+                    <filter name="month" string="Month" context="{'group_by': 'updated_at:month'}"/>
+                    <filter name="year" string="Year" context="{'group_by': 'updated_at:year'}"/>
                 </group>
             </search>
+        </field>
+    </record>
+    <record id="view_metal_trend_graph" model="ir.ui.view">
+        <field name="name">open.metal.price.trend.graph</field>
+        <field name="model">open.metal.price</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <graph string="Price trend" type="line" disable_linking="1">
+                <field name="updated_at" interval="month"/>
+                <field name="price" type="measure" string="Average price"/>
+            </graph>
+        </field>
+    </record>
+    <record id="view_metal_trend_pivot" model="ir.ui.view">
+        <field name="name">open.metal.price.trend.pivot</field>
+        <field name="model">open.metal.price</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <pivot string="Price trend" disable_linking="1">
+                <field name="updated_at" type="row" interval="year"/>
+                <field name="price" type="measure" string="Average price"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="view_metal_trend_list" model="ir.ui.view">
+        <field name="name">open.metal.price.trend.list</field>
+        <field name="model">open.metal.price</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false">
+                <field name="asset_id"/>
+                <field name="updated_at"/>
+                <field name="source_kind"/>
+                <field name="price" string="Source price (USD)"/>
+                <field name="display_price"/>
+            </list>
         </field>
     </record>
     <record id="view_metal_valuation_graph" model="ir.ui.view">

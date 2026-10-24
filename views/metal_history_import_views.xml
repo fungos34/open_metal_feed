@@ -1,0 +1,34 @@
+<odoo>
+    <record id="view_metal_history_import_form" model="ir.ui.view">
+        <field name="name">open.metal.history.import.form</field>
+        <field name="model">open.metal.history.import</field>
+        <field name="arch" type="xml">
+            <form string="Import price history">
+                <div class="alert alert-info" role="status">
+                    Uses one keyed API request per metal (free tier: 10 per hour). Only completed
+                    periods are imported; already imported periods are kept. History is stored in USD
+                    and shown in the price trend; no historical exchange rates are needed.
+                </div>
+                <group>
+                    <field name="asset_ids" widget="many2many_tags"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="group_by"/>
+                </group>
+                <footer>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"/>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_metal_history_import" model="ir.actions.act_window">
+        <field name="name">Import Price History</field>
+        <field name="res_model">open.metal.history.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <menuitem id="menu_metal_history_import" name="Import History" parent="menu_open_metal_root"
+              action="action_metal_history_import" sequence="90"
+              groups="open_metal_feed.group_metal_feed_manager,base.group_system"/>
+</odoo>

@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 
 class OpenMetalAsset(models.Model):
@@ -41,6 +41,7 @@ class OpenMetalAsset(models.Model):
         compute='_compute_valuation',
     )
     conversion_error = fields.Text(compute='_compute_valuation')
+    show_company_trend = fields.Boolean(compute='_compute_show_company_trend')
 
     _symbol_unique = models.Constraint('UNIQUE(symbol)', 'The metal symbol must be unique.')
 
@@ -85,26 +86,54 @@ class OpenMetalAsset(models.Model):
                 "Awaiting collection or suitable exchange rates."
             )
 
+    @api.depends_context('company')
+    def _compute_show_company_trend(self):
+        self.show_company_trend = self.env.company.currency_id != self.env.ref('base.USD')
+
     def action_refresh(self):
         return self.env['open.metal.price'].action_fetch_all_prices()
 
     def action_open_history(self):
+        """Price trend from stored USD prices (live and imported history), no conversion."""
+        return self._open_trend(self.env.ref('base.USD'))
+
+    def action_open_history_company(self):
+        """Same trend shown in the company currency, scaled with today's exchange rate."""
+        return self._open_trend(self.env.company.currency_id)
+
+    def _open_trend(self, currency):
         self.ensure_one()
+        Price = self.env['open.metal.price']
+        usd = self.env.ref('base.USD')
+        if currency == usd:
+            name = self.env._("Price trend: %(metal)s (USD)", metal=self.display_name)
+        else:
+            rate = Price._today_rate(currency)
+            if not rate:
+                raise UserError(self.env._(
+                    "No current %(currency)s/USD exchange rate is available in Odoo.",
+                    currency=currency.name,
+                ))
+            name = self.env._(
+                "Price trend: %(metal)s (%(currency)s at today's rate, 1 USD = %(rate)s %(currency)s)",
+                metal=self.display_name, currency=currency.name, rate=f'{rate:.4f}',
+            )
         return {
             'type': 'ir.actions.act_window',
-            'name': self.env._(
-                "Price history: %(metal)s (%(currency)s, %(company)s)",
-                metal=self.display_name, currency=self.env.company.currency_id.name,
-                company=self.env.company.display_name,
-            ),
-            'res_model': 'open.metal.valuation',
-            'view_mode': 'graph,list,pivot,form',
-            'domain': [
-                ('asset_id', '=', self.id),
-                ('company_id', '=', self.env.company.id),
-                ('currency_id', '=', self.env.company.currency_id.id),
-                ('state', '=', 'ready'),
+            'name': name,
+            'res_model': 'open.metal.price',
+            'view_mode': 'graph,pivot,list,form',
+            'views': [
+                (self.env.ref('open_metal_feed.view_metal_trend_graph').id, 'graph'),
+                (self.env.ref('open_metal_feed.view_metal_trend_pivot').id, 'pivot'),
+                (self.env.ref('open_metal_feed.view_metal_trend_list').id, 'list'),
+                (False, 'form'),
             ],
+            'domain': [
+                ('asset_id', '=', self.id), ('currency_id', '=', usd.id),
+                ('source_kind', 'in', ['live', 'history']),
+            ],
+            'context': {'metal_display_currency_id': currency.id},
         }
 
     def action_open_source_history(self):

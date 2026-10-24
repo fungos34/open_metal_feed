@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Open Metal Price Feed (Free)',
-    'version': '19.0.2.0.0',
+    'version': '19.0.2.1.0',
     'summary': 'Free and open precious metals price feed dashboard using gold-api.com',
     'category': 'Tools',
     'author': 'Community Developer',
@@ -16,6 +16,7 @@
         'data/ir_cron_data.xml',
         'views/metal_dashboard_views.xml',
         'views/metal_history_views.xml',
+        'views/metal_history_import_views.xml',
         'views/res_config_settings_views.xml',
     ],
     'post_init_hook': 'post_init_hook',

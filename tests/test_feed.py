@@ -1,10 +1,10 @@
 import unittest
-from datetime import datetime
+from datetime import date, datetime
 
 if __package__:
-    from ..feed import FeedError, cache_seconds, parse_quote
+    from ..feed import FeedError, cache_seconds, parse_history, parse_quote
 else:
-    from feed import FeedError, cache_seconds, parse_quote
+    from feed import FeedError, cache_seconds, parse_history, parse_quote
 
 
 class TestFreeFeed(unittest.TestCase):
@@ -72,3 +72,23 @@ class TestFreeFeed(unittest.TestCase):
         self.assertEqual(
             FeedError('429', 'Wed, 21 Oct 2026 11:00:00 GMT').retry_seconds(self.now), 0,
         )
+
+    def test_history_parses_string_prices_and_skips_bad_or_incomplete_rows(self):
+        rows = [
+            {'day': '1970-01-01 00:00:00', 'avg_price': '35.675000'},
+            {'day': '2026-10-20', 'avg_price': 4011.26},
+            {'day': '2026-10-21 00:00:00', 'avg_price': '4000'},
+            {'day': 'garbage', 'avg_price': '1'},
+            {'day': '2026-10-19', 'avg_price': 'nan'},
+            {'day': '2026-10-18', 'avg_price': '-3'},
+            {'day': '2026-10-17', 'max_price': '5'},
+            'not a row',
+        ]
+        self.assertEqual(parse_history(rows, 'day', 'avg', date(2026, 10, 21)), {
+            date(1970, 1, 1): 35.675, date(2026, 10, 20): 4011.26,
+        })
+        with self.assertRaises(FeedError):
+            parse_history({'error': 'Invalid API key'}, 'day', 'avg', date(2026, 10, 21))
+        with self.assertRaises(FeedError):
+            parse_history([], 'hour', 'avg', date(2026, 10, 21))
+

@@ -1,3 +1,4 @@
+import re
 import time
 
 import requests
@@ -42,6 +43,15 @@ class ResConfigSettings(models.TransientModel):
                 raise ValidationError(self.env._(
                     "The API base URL must be a plain https:// URL without credentials.",
                 )) from error
+
+    @api.constrains('metal_feed_api_key')
+    def _check_metal_api_key(self):
+        for settings in self:
+            if settings.metal_feed_api_key and re.search(r'\s', settings.metal_feed_api_key):
+                raise ValidationError(self.env._(
+                    "The API key must not contain spaces, tabs or line breaks. "
+                    "Copy only the key itself.",
+                ))
 
     def action_metal_feed_test_api_key(self):
         """Uses one request of the keyed quota (free tier: 10 per hour)."""

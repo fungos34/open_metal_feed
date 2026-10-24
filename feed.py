@@ -1,9 +1,9 @@
-"""Transport-independent validation for the public, keyless live-price endpoint."""
+"""Transport-independent validation for gold-api.com live and history responses."""
 
 import math
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 
 SYMBOLS = ('XAU', 'XAG', 'XPT', 'XPD')
@@ -70,3 +70,34 @@ def parse_quote(data: object, symbol: str, now: datetime) -> Quote:
 def cache_seconds(header: str) -> int:
     match = re.search(r'(?:^|,)\s*max-age\s*=\s*"?(\d+)"?(?:\s*,|\s*$)', header, re.I)
     return max(30, int(match.group(1)) if match else 30)
+
+
+HISTORY_GROUPS = ('day', 'week', 'month', 'year')
+HISTORY_AGGREGATIONS = ('avg', 'min', 'max')
+
+
+def parse_history(data: object, group_by: str, aggregation: str, before: date) -> dict:
+    """Map period start date -> price for the keyed /history endpoint.
+
+    Prices arrive as decimal strings and periods as 'YYYY-MM-DD HH:MM:SS'. Malformed
+    rows and periods starting on/after ``before`` (incomplete) are skipped."""
+    if group_by not in HISTORY_GROUPS or aggregation not in HISTORY_AGGREGATIONS:
+        raise FeedError('Unsupported history grouping or aggregation')
+    if not isinstance(data, list):
+        raise FeedError('Expected a JSON array')
+    points = {}
+    for row in data:
+        if not isinstance(row, dict):
+            continue
+        period, price = row.get(group_by), row.get(f'{aggregation}_price')
+        if not isinstance(period, str) or isinstance(price, bool) \
+                or not isinstance(price, (str, int, float)):
+            continue
+        try:
+            day = date.fromisoformat(period.strip()[:10])
+            price = float(price)
+        except (ValueError, OverflowError):
+            continue
+        if math.isfinite(price) and price > 0 and day < before:
+            points[day] = price
+    return points

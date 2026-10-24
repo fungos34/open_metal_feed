@@ -49,8 +49,11 @@ its own Community instance. Other Odoo versions are not claimed as tested.
    Odoo conversion conventions. No exchange-rate subscription is enabled.
 4. Gold, silver and platinum are active initially. Feed managers can enable
    palladium using the **Archived** dashboard search filter.
-5. Open a metal for **Price history**, **Source observations**, or manual refresh.
-   Refresh uses the same cache and backoff as the scheduler.
+5. Open a metal for **Price trend (USD)**, **Price trend (company currency)**,
+   **Source observations**, or manual refresh. Refresh uses the same cache and
+   backoff as the scheduler.
+6. Optional: with an API key, use **Metal Feed > Import History** to backfill
+   historical prices (see below).
 
 Administrators configure collection in Settings. The **Metal Feed Manager** group
 can configure assets and refresh the provider. All internal users can read public
@@ -62,7 +65,7 @@ the user's Odoo preferences.
 
 ## Free-only policy
 
-The only request made by collection is the keyless live price:
+The only request made by the regular collection is the keyless live price:
 
 ```
 GET {base URL}/price/{XAU|XAG|XPT|XPD}/USD
@@ -79,8 +82,16 @@ never carry the key, so they are not counted against the keyed quota. According
 to the provider documentation, keyed endpoints (`/history`, `/ohlc/{symbol}`) are
 limited to 10 requests per hour on the free tier; `hour`/`minute` history grouping
 requires a premium plan. **Test API key** in Settings validates the key with one
-small `/ohlc/XAU` request (one quota request). Historical/OHLC imports are not
-yet implemented; the helper is the integration point for them.
+small `/ohlc/XAU` request (one quota request).
+
+**Historical import** (`GET /history`, keyed): **Metal Feed > Import History**
+(feed managers/administrators) fetches one price per day, week or month (average)
+for the selected metals and date range, using one request per metal. Defaults are
+all active metals, daily, last five years; data back to 1970 is available. Only
+completed periods are stored (`source_kind = history`, USD), existing periods are
+never rewritten, and imported history never becomes the "latest" live price. A
+daily scheduled action appends completed days since the last imported day
+(30 days if none) when an API key is configured.
 
 No premium groupings, subscriptions or paid fallbacks are used. Provider terms
 can change; this module cannot guarantee a third party's future pricing. HTTP
@@ -103,8 +114,15 @@ minutes. A provider can return an old timestamp even after a successful request.
 - Source observations retain eight decimal places and the original currency,
   provider timestamp and retrieval timestamp. Repeated provider timestamps for an
   asset/currency are deduplicated, not rewritten.
-- Local history starts with collection. There is no pre-installation backfill.
-  Historical API imports are not implemented yet (see API access above).
+- Local history starts with collection; older periods can be imported with an
+  API key (see above). Imported history is stored in USD only and creates **no**
+  company valuations, so no historical exchange rates are needed.
+- **Price trend** charts read the stored USD prices (live and imported history).
+  **Price trend (USD)** is exact. **Price trend (company currency)** scales the
+  whole trend with **today's** USD rate from Odoo (`res.currency._convert`); it
+  shows the shape of the trend in that currency, not historical prices in that
+  currency. It is refused if Odoo has no current rate. Values are converted for
+  chart, pivot and the list's *Price* column; the stored price is unchanged.
 - A company valuation snapshots the converted value, date, conversion multiplier
   and rate provenance. Later rate edits do not change successful valuations.
   A company currency change produces new valuations in the new currency going
@@ -114,9 +132,10 @@ minutes. A provider can return an old timestamp even after a successful request.
   collection, oldest attempt first, after rates become available. These are
   valuations using subsequently configured **historically dated** rates, not
   quotes retrieved retroactively from the provider.
-- Company charts are opened per metal and are fixed to the current company and
-  currency, both shown in the chart title. Reopen a metal's chart after switching
-  companies to select the new context. Daily/weekly/monthly aggregation averages sampled prices rather than
+- Trend charts are opened per metal; the currency and today's rate are shown in
+  the title. Reopen a chart after switching companies. **Company Valuations**
+  remain available as a menu for exact, dated-rate conversions of live prices.
+  Daily/weekly/monthly aggregation averages sampled prices rather than
   summing them. These are sample averages, not time-weighted market averages.
   Cross-currency/cross-asset overview menus are lists, not mixed-price charts.
 - The supplied API contract does not specify a pricing unit. Until verified,

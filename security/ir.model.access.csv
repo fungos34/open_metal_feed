@@ -3,3 +3,5 @@ access_open_metal_price_user,open.metal.price.user,model_open_metal_price,base.g
 access_open_metal_asset_user,open.metal.asset.user,model_open_metal_asset,base.group_user,1,0,0,0
 access_open_metal_asset_manager,open.metal.asset.manager,model_open_metal_asset,open_metal_feed.group_metal_feed_manager,1,1,1,0
 access_open_metal_valuation_user,open.metal.valuation.user,model_open_metal_valuation,base.group_user,1,0,0,0
+access_open_metal_history_import_manager,open.metal.history.import.manager,model_open_metal_history_import,open_metal_feed.group_metal_feed_manager,1,1,1,1
+access_open_metal_history_import_system,open.metal.history.import.system,model_open_metal_history_import,base.group_system,1,1,1,1

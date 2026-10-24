@@ -73,6 +73,7 @@ msgstr "Metall-Feed-Verwalter"
 
 #. module: open_metal_feed
 #: model:ir.cron,cron_name:open_metal_feed.ir_cron_fetch_open_metal_prices
+#: model:ir.actions.server,name:open_metal_feed.ir_cron_fetch_open_metal_prices_ir_actions_server
 msgid "Metal prices: free live collection"
 msgstr "Metallkurse: kostenlose Live-Abfrage"
 
@@ -81,12 +82,6 @@ msgstr "Metallkurse: kostenlose Live-Abfrage"
 #: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
 msgid "Refresh prices"
 msgstr "Kurse aktualisieren"
-
-#. module: open_metal_feed
-#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_price_kanban
-#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
-msgid "Price history"
-msgstr "Kursverlauf"
 
 #. module: open_metal_feed
 #: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
@@ -167,16 +162,21 @@ msgstr "Metall"
 #. module: open_metal_feed
 #: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
 #: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_search
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_history_import__group_by__day
 msgid "Day"
 msgstr "Tag"
 
 #. module: open_metal_feed
 #: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_search
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_history_import__group_by__week
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
 msgid "Week"
 msgstr "Woche"
 
 #. module: open_metal_feed
 #: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_search
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_history_import__group_by__month
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
 msgid "Month"
 msgstr "Monat"
 
@@ -440,6 +440,7 @@ msgstr "Unternehmen"
 
 #. module: open_metal_feed
 #: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_valuation__price
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_price__display_price
 msgid "Price"
 msgstr "Kurs"
 
@@ -503,12 +504,6 @@ msgstr "%(attempted)s Anfragen versucht; %(failed)s fehlgeschlagen. Vorhandene K
 #: code:addons/open_metal_feed/models/metal_asset.py:0
 msgid "Awaiting collection or suitable exchange rates."
 msgstr "Warten auf einen Abruf oder geeignete Wechselkurse."
-
-#. module: open_metal_feed
-#: code:addons/open_metal_feed/models/metal_asset.py:0
-#, python-format
-msgid "Price history: %(metal)s (%(currency)s, %(company)s)"
-msgstr "Kursverlauf: %(metal)s (%(currency)s, %(company)s)"
 
 #. module: open_metal_feed
 #: code:addons/open_metal_feed/models/metal_asset.py:0
@@ -633,3 +628,196 @@ msgstr "Die API ist nicht erreichbar oder hat ungültige Daten geliefert."
 #: code:addons/open_metal_feed/models/res_config_settings.py:0
 msgid "Metal feed API key"
 msgstr "API-Schlüssel des Metall-Feeds"
+
+#. module: open_metal_feed
+#. odoo-python
+#: code:addons/open_metal_feed/models/metal_history_import.py:0
+msgid "%(count)s historical prices imported."
+msgstr "%(count)s historische Kurse importiert."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_history_import_form
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#. module: open_metal_feed
+#. odoo-python
+#: code:addons/open_metal_feed/models/metal_history_import.py:0
+msgid "Enter an API key in Metal Feed > Settings first."
+msgstr "Bitte zuerst unter Metall-Feed > Einstellungen einen API-Schlüssel eingeben."
+
+#. module: open_metal_feed
+#. odoo-python
+#: code:addons/open_metal_feed/models/metal_history_import.py:0
+msgid "Failed: %(errors)s"
+msgstr "Fehlgeschlagen: %(errors)s"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_history_import__date_from
+msgid "From"
+msgstr "Von"
+
+#. module: open_metal_feed
+#: model:ir.model.fields.selection,name:open_metal_feed.selection__open_metal_price__source_kind__history
+msgid "Historical period price"
+msgstr "Historischer Periodenkurs"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_valuation_search
+msgid "Historical prices"
+msgstr "Historische Kurse"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_history_import_form
+msgid "Import"
+msgstr "Importieren"
+
+#. module: open_metal_feed
+#: model:ir.model,name:open_metal_feed.model_open_metal_history_import
+msgid "Import Historical Metal Prices"
+msgstr "Historische Metallkurse importieren"
+
+#. module: open_metal_feed
+#: model:ir.ui.menu,name:open_metal_feed.menu_metal_history_import
+msgid "Import History"
+msgstr "Verlauf importieren"
+
+#. module: open_metal_feed
+#: model:ir.actions.act_window,name:open_metal_feed.action_metal_history_import
+msgid "Import Price History"
+msgstr "Kursverlauf importieren"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_history_import_form
+msgid "Import price history"
+msgstr "Kursverlauf importieren"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
+msgid "Live observations"
+msgstr "Live-Beobachtungen"
+
+#. module: open_metal_feed
+#. odoo-python
+#: code:addons/open_metal_feed/models/metal_history_import.py:0
+msgid "Metal history"
+msgstr "Metallkursverlauf"
+
+#. module: open_metal_feed
+#: model:ir.actions.server,name:open_metal_feed.ir_cron_import_open_metal_history_ir_actions_server
+msgid "Metal prices: daily history (API key)"
+msgstr "Metallkurse: täglicher Verlauf (API-Schlüssel)"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_history_import__asset_ids
+msgid "Metals"
+msgstr "Metalle"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_history_import__group_by
+msgid "One price per"
+msgstr "Ein Kurs pro"
+
+#. module: open_metal_feed
+#. odoo-python
+#: code:addons/open_metal_feed/models/metal_history_import.py:0
+msgid "Only feed managers may import history."
+msgstr "Nur Feed-Manager dürfen den Verlauf importieren."
+
+#. module: open_metal_feed
+#. odoo-python
+#: code:addons/open_metal_feed/models/res_config_settings.py:0
+msgid ""
+"The API key must not contain spaces, tabs or line breaks. Copy only the key "
+"itself."
+msgstr "Der API-Schlüssel darf keine Leerzeichen, Tabulatoren oder Zeilenumbrüche enthalten. Bitte nur den Schlüssel selbst kopieren."
+
+#. module: open_metal_feed
+#. odoo-python
+#: code:addons/open_metal_feed/models/metal_history_import.py:0
+msgid "The start date must be before the end date."
+msgstr "Das Startdatum muss vor dem Enddatum liegen."
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_history_import__date_to
+msgid "To"
+msgstr "Bis"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_trend_graph
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_trend_pivot
+msgid "Average price"
+msgstr "Durchschnittskurs"
+
+#. module: open_metal_feed
+#. odoo-python
+#: code:addons/open_metal_feed/models/metal_asset.py:0
+msgid "No current %(currency)s/USD exchange rate is available in Odoo."
+msgstr "In Odoo ist kein aktueller %(currency)s/USD-Wechselkurs verfügbar."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_trend_graph
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_trend_pivot
+msgid "Price trend"
+msgstr "Kursentwicklung"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_price_kanban
+msgid "Price trend ("
+msgstr "Kursentwicklung ("
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_price_kanban
+msgid "Price trend (USD)"
+msgstr "Kursentwicklung (USD)"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_open_metal_asset_form
+msgid "Price trend (company currency)"
+msgstr "Kursentwicklung (Unternehmenswährung)"
+
+#. module: open_metal_feed
+#. odoo-python
+#: code:addons/open_metal_feed/models/metal_asset.py:0
+msgid ""
+"Price trend: %(metal)s (%(currency)s at today's rate, 1 USD = %(rate)s "
+"%(currency)s)"
+msgstr "Kursentwicklung: %(metal)s (%(currency)s zum heutigen Kurs, 1 USD = %(rate)s %(currency)s)"
+
+#. module: open_metal_feed
+#. odoo-python
+#: code:addons/open_metal_feed/models/metal_asset.py:0
+msgid "Price trend: %(metal)s (USD)"
+msgstr "Kursentwicklung: %(metal)s (USD)"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,field_description:open_metal_feed.field_open_metal_asset__show_company_trend
+msgid "Show Company Trend"
+msgstr "Entwicklung in Unternehmenswährung anzeigen"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_trend_list
+msgid "Source price (USD)"
+msgstr "Quellkurs (USD)"
+
+#. module: open_metal_feed
+#: model:ir.model.fields,help:open_metal_feed.field_open_metal_price__display_price
+msgid ""
+"Source price, converted with today's rate when a display currency is "
+"selected."
+msgstr "Quellkurs, bei gewählter Anzeigewährung mit dem heutigen Wechselkurs umgerechnet."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_observation_search
+msgid "Year"
+msgstr "Jahr"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.view_metal_history_import_form
+msgid ""
+"Uses one keyed API request per metal (free tier: 10 per hour). Only completed\n"
+"                    periods are imported; already imported periods are kept. History is stored in USD\n"
+"                    and shown in the price trend; no historical exchange rates are needed."
+msgstr "Verwendet eine authentifizierte API-Anfrage pro Metall (kostenlos: 10 pro Stunde). Nur abgeschlossene Perioden werden importiert; bereits importierte bleiben unverändert. Der Verlauf wird in USD gespeichert und in der Kursentwicklung angezeigt; historische Wechselkurse werden nicht benötigt."

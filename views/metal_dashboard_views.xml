@@ -8,6 +8,7 @@
                 <field name="latest_id"/>
                 <field name="company_currency_id"/>
                 <field name="source_currency_id"/>
+                <field name="show_company_trend"/>
                 <templates>
                     <t t-name="card">
                         <div class="p-3">
@@ -27,7 +28,11 @@
                             <div>Retrieved at: <field name="fetched_at"/></div>
                             <div class="text-danger"><field name="last_error"/></div>
                             <button name="action_open_history" type="object"
-                                    class="btn btn-link mt-2">Price history</button>
+                                    class="btn btn-link mt-2">Price trend (USD)</button>
+                            <button name="action_open_history_company" type="object"
+                                    class="btn btn-link mt-2"
+                                    invisible="not show_company_trend">
+                                Price trend (<t t-out="record.company_currency_id.value"/>)</button>
                         </div>
                     </t>
                 </templates>
@@ -66,7 +71,10 @@
                 <header>
                     <button name="action_refresh" type="object" string="Refresh prices"
                             groups="open_metal_feed.group_metal_feed_manager"/>
-                    <button name="action_open_history" type="object" string="Price history"/>
+                    <button name="action_open_history" type="object" string="Price trend (USD)"/>
+                    <field name="show_company_trend" invisible="1"/>
+                    <button name="action_open_history_company" type="object"
+                            string="Price trend (company currency)" invisible="not show_company_trend"/>
                     <button name="action_open_source_history" type="object" string="Source observations"/>
                 </header>
                 <sheet>

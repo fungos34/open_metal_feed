@@ -1,5 +1,5 @@
 import logging
-from datetime import timedelta
+from datetime import datetime, time, timedelta, timezone
 from urllib.parse import urlsplit
 
 import requests
@@ -7,7 +7,7 @@ import requests
 from odoo import api, fields, models
 from odoo.exceptions import AccessError
 
-from ..feed import FeedError, cache_seconds, parse_quote
+from ..feed import FeedError, cache_seconds, parse_history, parse_quote
 
 _logger = logging.getLogger(__name__)
 _FETCH_LOCK = 1948062101
@@ -40,7 +40,8 @@ class OpenMetalPrice(models.Model):
     updated_at = fields.Datetime(string="Market timestamp", index=True, readonly=True)
     fetched_at = fields.Datetime(string="Retrieved at", readonly=True)
     source_kind = fields.Selection(
-        [('live', 'Live observation'), ('legacy', 'Legacy snapshot')],
+        [('live', 'Live observation'), ('legacy', 'Legacy snapshot'),
+         ('history', 'Historical period price')],
         default='live', required=True, readonly=True,
     )
     unit = fields.Selection(
@@ -48,6 +49,10 @@ class OpenMetalPrice(models.Model):
         string="Pricing unit", default='provider_unit', required=True, readonly=True,
     )
     provider_key = fields.Char(readonly=True, index=True, copy=False)
+    display_price = fields.Float(
+        string="Price", compute='_compute_display_price', digits=(24, 8),
+        help="Source price, converted with today's rate when a display currency is selected.",
+    )
 
     _provider_key_unique = models.Constraint(
         'UNIQUE(provider_key)', 'This provider observation has already been collected.',
@@ -86,6 +91,66 @@ class OpenMetalPrice(models.Model):
                 raise FeedError('No API key is configured')
             kwargs['headers'] = {'x-api-key': api_key}
         return requests.get(f'{url}/{path.lstrip("/")}', **kwargs)
+
+    @api.model
+    def _today_rate(self, target):
+        """Today's USD -> ``target`` multiplier via Odoo core, or False if a rate is missing.
+
+        Core ``_convert`` silently assumes 1.0 for missing rates, so require a rate row for
+        every non-base currency involved (the company currency may be the implicit 1.0 base)."""
+        usd = self.env.ref('base.USD')
+        if target == usd:
+            return 1.0
+        company = self.env.company
+        today = fields.Date.context_today(self)
+        for currency in usd | target:
+            if currency == company.root_id.currency_id and not self.env['res.currency.rate'].search_count(
+                    [('currency_id', '=', currency.id), ('company_id', 'in', [False, company.root_id.id])],
+                    limit=1):
+                continue
+            if not self.env['res.currency.rate'].search_count([
+                ('currency_id', '=', currency.id), ('name', '<=', today),
+                ('company_id', 'in', [False, company.root_id.id]),
+            ], limit=1):
+                return False
+        return usd._convert(1.0, target, company, today, round=False)
+
+    def _trend_factor(self):
+        currency_id = self.env.context.get('metal_display_currency_id')
+        if not currency_id:
+            return 1.0
+        return self._today_rate(self.env['res.currency'].browse(currency_id)) or 1.0
+
+    @api.depends('price')
+    @api.depends_context('metal_display_currency_id', 'company')
+    def _compute_display_price(self):
+        factor = self._trend_factor()
+        for record in self:
+            record.display_price = record.price * factor
+
+    @staticmethod
+    def _scale_price_aggregates(rows, factor):
+        for row in rows:
+            for key, value in row.items():
+                if key.split(':')[0] == 'price' and isinstance(value, (int, float)) \
+                        and not isinstance(value, bool):
+                    row[key] = value * factor
+        return rows
+
+    @api.model
+    def formatted_read_group(self, domain, groupby=(), aggregates=(), *args, **kwargs):
+        rows = super().formatted_read_group(domain, groupby, aggregates, *args, **kwargs)
+        factor = self._trend_factor()
+        return rows if factor == 1.0 else self._scale_price_aggregates(rows, factor)
+
+    @api.model
+    def formatted_read_grouping_sets(self, domain, grouping_sets, aggregates=(), **kwargs):
+        result = super().formatted_read_grouping_sets(domain, grouping_sets, aggregates, **kwargs)
+        factor = self._trend_factor()
+        if factor != 1.0:
+            for rows in result:
+                self._scale_price_aggregates(rows, factor)
+        return result
 
     @api.model
     def _cron_fetch_prices(self):
@@ -166,6 +231,64 @@ class OpenMetalPrice(models.Model):
             "Cached prices were reused where applicable. Check each asset's status.",
             attempted=attempted, failed=failed,
         )
+
+    @api.model
+    def _import_history(self, assets, date_from, date_to, group_by='day', aggregation='avg'):
+        """Import completed periods from the keyed /history endpoint (one request per
+        asset). Existing periods are kept unchanged. Returns (created, errors)."""
+        today = fields.Date.context_today(self.with_context(tz='UTC'))
+        date_to = min(date_to, today - timedelta(days=1))
+        usd = self.env.ref('base.USD')
+        created, errors = self.browse(), {}
+        if date_from > date_to:
+            return created, errors
+        start = int(datetime.combine(date_from, time.min, timezone.utc).timestamp())
+        end = int(datetime.combine(date_to, time.max, timezone.utc).timestamp())
+        for asset in assets:
+            try:
+                response = self._gold_api_get('history', params={
+                    'symbol': asset.symbol, 'startTimestamp': start, 'endTimestamp': end,
+                    'groupBy': group_by, 'aggregation': aggregation, 'orderBy': 'asc',
+                }, authenticated=True)
+                with response:
+                    if response.status_code != 200:
+                        raise FeedError(f'HTTP {response.status_code}')
+                    points = parse_history(response.json(), group_by, aggregation, today)
+            except (requests.RequestException, ValueError, FeedError) as error:
+                _logger.warning("Metal history %s: %s", asset.symbol, error)
+                errors[asset.symbol] = str(error)
+                continue
+            keys = {
+                f'{asset.symbol}:USD:history:{group_by}:{aggregation}:{day.isoformat()}': (day, price)
+                for day, price in points.items() if date_from <= day <= date_to
+            }
+            existing = set(self.search([('provider_key', 'in', list(keys))]).mapped('provider_key'))
+            now = fields.Datetime.now()
+            # History is charted in USD (see open.metal.asset.action_open_history); no company
+            # valuations are created, so no historical exchange rates are needed.
+            new = self.create([{
+                'asset_id': asset.id, 'currency_id': usd.id, 'price': price,
+                'updated_at': datetime.combine(day, time.min), 'fetched_at': now,
+                'source_kind': 'history', 'provider_key': key,
+            } for key, (day, price) in keys.items() if key not in existing])
+            created |= new
+        return created, errors
+
+    @api.model
+    def _cron_import_history(self):
+        """Daily: append completed days since the last imported day (needs an API key)."""
+        if not self.env['ir.config_parameter'].sudo().get_param('open_metal_feed.api_key'):
+            return
+        yesterday = fields.Date.context_today(self.with_context(tz='UTC')) - timedelta(days=1)
+        for asset in self.env['open.metal.asset'].search([]):
+            last = self.search([
+                ('asset_id', '=', asset.id), ('source_kind', '=', 'history'),
+                ('provider_key', '=like', f'{asset.symbol}:USD:history:day:avg:%'),
+            ], order='updated_at desc', limit=1)
+            date_from = last.updated_at.date() + timedelta(days=1) if last \
+                else yesterday - timedelta(days=30)
+            if date_from <= yesterday:
+                self.sudo()._import_history(asset, date_from, yesterday)
 
     def _ensure_valuations(self, companies):
         Valuation = self.env['open.metal.valuation']
