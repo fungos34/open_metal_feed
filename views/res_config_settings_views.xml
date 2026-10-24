@@ -16,10 +16,25 @@
                             <field name="metal_feed_interval_minutes"/>
                         </setting>
                         <setting string="Free live prices only"
-                                 help="No API key, paid endpoints, premium grouping, or external exchange-rate subscription is used. Historical charts use locally stored observations.">
+                                 help="Live prices are fetched without an API key. No paid endpoints, premium grouping, or external exchange-rate subscription is used. Historical charts use locally stored observations.">
                             <div class="text-muted">
                                 Configure dated currency rates in Odoo before using non-USD company valuations.
                                 Missing rates are reported, never replaced by a rate of 1.
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="API access" name="metal_feed_api">
+                        <setting string="API base URL"
+                                 help="gold-api.com endpoint. Only https:// URLs are accepted; redirects are never followed.">
+                            <field name="metal_feed_base_url" placeholder="https://api.gold-api.com"/>
+                        </setting>
+                        <setting string="API key"
+                                 help="Sent as x-api-key only to endpoints that require it (history, OHLC). Live prices stay keyless and unlimited. The free key tier allows 10 keyed requests per hour.">
+                            <field name="metal_feed_api_key" password="True"/>
+                            <div class="mt8">
+                                <button name="action_metal_feed_test_api_key" type="object"
+                                        string="Test API key" icon="oi-arrow-right" class="btn-link"/>
+                                <div class="text-muted">The test uses one keyed request.</div>
                             </div>
                         </setting>
                     </block>

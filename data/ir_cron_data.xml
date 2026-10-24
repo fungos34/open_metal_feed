@@ -9,5 +9,14 @@
             <field name="interval_type">minutes</field>
             <field name="active" eval="True"/>
         </record>
+        <record id="ir_cron_import_open_metal_history" model="ir.cron">
+            <field name="name">Metal prices: daily history (API key)</field>
+            <field name="model_id" ref="model_open_metal_price"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_import_history()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
     </data>
 </odoo>
