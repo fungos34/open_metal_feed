@@ -230,8 +230,8 @@ msgstr "Nur kostenlose Live-Kurse"
 
 #. module: open_metal_feed
 #: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
-msgid "No API key, paid endpoints, premium grouping, or external exchange-rate subscription is used. Historical charts use locally stored observations."
-msgstr "Es werden keine API-Schlüssel, kostenpflichtigen Endpunkte, Premium-Gruppierungen oder externen Wechselkursabonnements verwendet. Verlaufsdiagramme verwenden lokal gespeicherte Beobachtungen."
+msgid "Live prices are fetched without an API key. No paid endpoints, premium grouping, or external exchange-rate subscription is used. Historical charts use locally stored observations."
+msgstr "Live-Kurse werden ohne API-Schlüssel abgerufen. Es werden keine kostenpflichtigen Endpunkte, Premium-Gruppierungen oder externen Wechselkursabonnements verwendet. Verlaufsdiagramme verwenden lokal gespeicherte Beobachtungen."
 
 #. module: open_metal_feed
 #: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
@@ -556,3 +556,80 @@ msgstr "Diese Unternehmensbewertung ist bereits vorhanden."
 #: code:addons/open_metal_feed/models/metal_asset.py:0
 msgid "A metal's symbol cannot be changed. Archive it instead."
 msgstr "Das Symbol eines Metalls kann nicht geändert werden. Archivieren Sie es stattdessen."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "API access"
+msgstr "API-Zugang"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+#: model:ir.model.fields,field_description:open_metal_feed.field_res_config_settings__metal_feed_base_url
+msgid "API base URL"
+msgstr "API-Basis-URL"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+#: model:ir.model.fields,field_description:open_metal_feed.field_res_config_settings__metal_feed_api_key
+msgid "API key"
+msgstr "API-Schlüssel"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "gold-api.com endpoint. Only https:// URLs are accepted; redirects are never followed."
+msgstr "gold-api.com-Endpunkt. Nur https://-URLs sind zulässig; Weiterleitungen werden nie verfolgt."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "Sent as x-api-key only to endpoints that require it (history, OHLC). Live prices stay keyless and unlimited. The free key tier allows 10 keyed requests per hour."
+msgstr "Wird als x-api-key nur an Endpunkte gesendet, die ihn benötigen (Verlauf, OHLC). Live-Kurse bleiben schlüssellos und unbegrenzt. Die kostenlose Schlüsselstufe erlaubt 10 authentifizierte Anfragen pro Stunde."
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "Test API key"
+msgstr "API-Schlüssel testen"
+
+#. module: open_metal_feed
+#: model_terms:ir.ui.view,arch_db:open_metal_feed.res_config_settings_view_form_metal
+msgid "The test uses one keyed request."
+msgstr "Der Test verbraucht eine authentifizierte Anfrage."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/res_config_settings.py:0
+msgid "The API base URL must be a plain https:// URL without credentials."
+msgstr "Die API-Basis-URL muss eine einfache https://-URL ohne Zugangsdaten sein."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/res_config_settings.py:0
+msgid "Enter an API key first."
+msgstr "Bitte zuerst einen API-Schlüssel eingeben."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/res_config_settings.py:0
+msgid "The API key was accepted."
+msgstr "Der API-Schlüssel wurde akzeptiert."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/res_config_settings.py:0
+msgid "The API key was rejected (HTTP %s)."
+msgstr "Der API-Schlüssel wurde abgelehnt (HTTP %s)."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/res_config_settings.py:0
+msgid "The keyed request quota is exhausted (HTTP 429). Try again later."
+msgstr "Das Kontingent für authentifizierte Anfragen ist erschöpft (HTTP 429). Bitte später erneut versuchen."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/res_config_settings.py:0
+msgid "Unexpected response (HTTP %s)."
+msgstr "Unerwartete Antwort (HTTP %s)."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/res_config_settings.py:0
+msgid "The API could not be reached or returned invalid data."
+msgstr "Die API ist nicht erreichbar oder hat ungültige Daten geliefert."
+
+#. module: open_metal_feed
+#: code:addons/open_metal_feed/models/res_config_settings.py:0
+msgid "Metal feed API key"
+msgstr "API-Schlüssel des Metall-Feeds"

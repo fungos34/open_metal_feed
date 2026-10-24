@@ -63,6 +63,7 @@ class OpenMetalValuation(models.Model):
             date = observation.updated_at.date()
             values = {'last_attempt_at': fields.Datetime.now(), 'conversion_date': date}
             rates = self.env['res.currency.rate']
+            implicit = self.env['res.currency']
             if source != target:
                 # Odoo otherwise falls back to future rates or 1.0. Neither is valid here.
                 for currency in source | target:
@@ -74,6 +75,15 @@ class OpenMetalValuation(models.Model):
                         domain + [('company_id', '=', False)],
                         order='name desc, id desc', limit=1,
                     )
+                    if not rate and currency == company.root_id.currency_id and not self.env[
+                        'res.currency.rate'
+                    ].search_count([
+                        ('currency_id', '=', currency.id),
+                        ('company_id', 'in', [False, company.root_id.id]),
+                    ], limit=1):
+                        # Company currency without any rate row is the 1.0 base, as in core.
+                        implicit |= currency
+                        continue
                     if not rate or not math.isfinite(rate.rate) or rate.rate <= 0:
                         values.update({
                             'error_code': 'missing_rate', 'missing_currency_id': currency.id,
@@ -86,11 +96,11 @@ class OpenMetalValuation(models.Model):
                 if not math.isfinite(rate) or rate <= 0 or not math.isfinite(price) or price <= 0:
                     values.update({'error_code': 'invalid', 'missing_currency_id': False})
                 else:
-                    provenance = '\n'.join(
+                    provenance = '\n'.join([
                         f'{item.currency_id.name}: {item.rate!r}; {item.name}; '
                         f'company={item.company_id.id or "shared"}; rate_id={item.id}'
                         for item in rates
-                    )
+                    ] + [f'{item.name}: 1.0; company currency base' for item in implicit])
                     values.update({
                         'state': 'ready', 'error_code': False, 'missing_currency_id': False,
                         'price': price,

@@ -1,5 +1,6 @@
 import logging
 from datetime import timedelta
+from urllib.parse import urlsplit
 
 import requests
 
@@ -10,6 +11,16 @@ from ..feed import FeedError, cache_seconds, parse_quote
 
 _logger = logging.getLogger(__name__)
 _FETCH_LOCK = 1948062101
+DEFAULT_BASE_URL = 'https://api.gold-api.com'
+
+
+def normalize_base_url(url):
+    url = (url or DEFAULT_BASE_URL).strip().rstrip('/')
+    parsed = urlsplit(url)
+    if parsed.scheme != 'https' or not parsed.hostname or '@' in parsed.netloc \
+            or parsed.query or parsed.fragment:
+        raise FeedError('The API base URL must be a plain https:// URL without credentials')
+    return url
 
 
 class OpenMetalPrice(models.Model):
@@ -61,6 +72,22 @@ class OpenMetalPrice(models.Model):
         }
 
     @api.model
+    def _gold_api_get(self, path, params=None, authenticated=False, base_url=None, api_key=None):
+        """GET from gold-api.com. The key is only sent to endpoints that require it,
+        so keyless live prices never consume the keyed (rate-limited) quota."""
+        config = self.env['ir.config_parameter'].sudo()
+        url = normalize_base_url(base_url or config.get_param('open_metal_feed.base_url'))
+        kwargs = {'timeout': (5, 10), 'allow_redirects': False}
+        if params:
+            kwargs['params'] = params
+        if authenticated:
+            api_key = (api_key or config.get_param('open_metal_feed.api_key') or '').strip()
+            if not api_key:
+                raise FeedError('No API key is configured')
+            kwargs['headers'] = {'x-api-key': api_key}
+        return requests.get(f'{url}/{path.lstrip("/")}', **kwargs)
+
+    @api.model
     def _cron_fetch_prices(self):
         self.sudo()._collect_prices()
 
@@ -84,11 +111,8 @@ class OpenMetalPrice(models.Model):
                 attempted += 1
                 asset.write({'last_attempt_at': now})
                 try:
-                    # No credentials, redirects, historical endpoints, or paid fallbacks.
-                    response = requests.get(
-                        f'https://api.gold-api.com/price/{asset.symbol}/USD',
-                        timeout=(5, 10), allow_redirects=False,
-                    )
+                    # Live prices are free and unlimited; never send the API key here.
+                    response = self._gold_api_get(f'price/{asset.symbol}/USD')
                     with response:
                         if response.status_code != 200:
                             retry_after = response.headers.get('Retry-After', '')

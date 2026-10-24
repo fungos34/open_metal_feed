@@ -43,7 +43,9 @@ its own Community instance. Other Odoo versions are not claimed as tested.
    observations continue while another company remains enabled.
 3. Configure dated USD and company-currency rates in Odoo for non-USD valuations.
    Both currencies need a valid rate on or before the market observation's UTC
-   date. Company/root-company rates take precedence over shared rates, following
+   date. As in Odoo core, the company currency without any rate record is the
+   1.0 base (e.g. ECB rates for a EUR company only store the foreign currency).
+   Company/root-company rates take precedence over shared rates, following
    Odoo conversion conventions. No exchange-rate subscription is enabled.
 4. Gold, silver and platinum are active initially. Feed managers can enable
    palladium using the **Archived** dashboard search filter.
@@ -60,17 +62,29 @@ the user's Odoo preferences.
 
 ## Free-only policy
 
-The only network request implemented is:
+The only request made by collection is the keyless live price:
 
 ```
-GET https://api.gold-api.com/price/{XAU|XAG|XPT|XPD}/USD
+GET {base URL}/price/{XAU|XAG|XPT|XPD}/USD
 ```
 
-There are no API keys, historical/OHLC calls, premium groupings, subscriptions,
-redirects or paid fallbacks. The supplied provider documentation describes this
-endpoint as free and unlimited. Provider terms can change; this module cannot
-guarantee a third party's future pricing. It will not authenticate or opt into a
-paid product. HTTP failures remain visible and retain the last valid observation.
+The base URL (default `https://api.gold-api.com`, `https://` only, redirects are
+never followed) and an optional API key are set in **Metal Feed > Settings > API
+access** and stored as system parameters (`open_metal_feed.base_url`,
+`open_metal_feed.api_key`) readable by administrators only.
+
+The API key is sent as `x-api-key` **only** to endpoints that require it, through
+`open.metal.price._gold_api_get(path, params, authenticated=True)`. Live prices
+never carry the key, so they are not counted against the keyed quota. According
+to the provider documentation, keyed endpoints (`/history`, `/ohlc/{symbol}`) are
+limited to 10 requests per hour on the free tier; `hour`/`minute` history grouping
+requires a premium plan. **Test API key** in Settings validates the key with one
+small `/ohlc/XAU` request (one quota request). Historical/OHLC imports are not
+yet implemented; the helper is the integration point for them.
+
+No premium groupings, subscriptions or paid fallbacks are used. Provider terms
+can change; this module cannot guarantee a third party's future pricing. HTTP
+failures remain visible and retain the last valid observation.
 
 Requests are coordinated across workers **within one database**, cached for at
 least 30 seconds (longer if `Cache-Control: max-age` says so), and backed off on
@@ -90,7 +104,7 @@ minutes. A provider can return an old timestamp even after a successful request.
   provider timestamp and retrieval timestamp. Repeated provider timestamps for an
   asset/currency are deduplicated, not rewritten.
 - Local history starts with collection. There is no pre-installation backfill.
-  Historical API imports are intentionally not implemented.
+  Historical API imports are not implemented yet (see API access above).
 - A company valuation snapshots the converted value, date, conversion multiplier
   and rate provenance. Later rate edits do not change successful valuations.
   A company currency change produces new valuations in the new currency going

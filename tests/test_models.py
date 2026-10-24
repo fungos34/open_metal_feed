@@ -119,6 +119,28 @@ class TestMetalFeed(TransactionCase):
         self.assertEqual(valuation.state, 'ready')
         self.assertAlmostEqual(valuation.conversion_rate, 0.8)
 
+    def test_company_currency_without_rate_row_is_base(self):
+        stamp = fields.Datetime.now() - timedelta(minutes=1)
+        self.env['res.currency.rate'].search([
+            ('currency_id', 'in', (self.usd | self.eur).ids),
+            ('company_id', 'in', [False, self.other_company.id]),
+        ]).unlink()
+        # ECB-style data: only the foreign currency gets a rate row.
+        self.env['res.currency.rate'].create({
+            'currency_id': self.usd.id, 'company_id': self.other_company.id,
+            'name': stamp.date(), 'rate': 1.25,
+        })
+        with patch(_REQUEST, return_value=self._response(stamp)):
+            self.Feed._collect_prices()
+        valuation = self.Valuation.search([
+            ('observation_id', '=', self.gold.latest_id.id),
+            ('company_id', '=', self.other_company.id),
+        ])
+        self.assertEqual(valuation.state, 'ready')
+        self.assertAlmostEqual(valuation.conversion_rate, 0.8)
+        self.assertAlmostEqual(valuation.price, self.gold.latest_id.price * 0.8)
+        self.assertIn('company currency base', valuation.rate_provenance)
+
     def test_failures_preserve_price_backoff_and_visible_error(self):
         with patch(_REQUEST, return_value=self._response()):
             self.Feed._collect_prices()
@@ -253,3 +275,39 @@ class TestMetalFeed(TransactionCase):
         settings.set_values()
         self.assertEqual(cron.interval_number, previous + 1)
         self.assertEqual(cron.interval_type, 'minutes')
+
+    def test_api_key_is_configurable_and_never_sent_to_live_prices(self):
+        settings = self.env['res.config.settings'].create({
+            'metal_feed_base_url': 'https://api.gold-api.com/', 'metal_feed_api_key': 'secret',
+        })
+        settings.set_values()
+        with patch(_REQUEST, return_value=self._response()) as get:
+            self.Feed._collect_prices()
+        get.assert_called_once_with(
+            'https://api.gold-api.com/price/XAU/USD', timeout=(5, 10), allow_redirects=False,
+        )
+        with patch(_REQUEST) as get:
+            self.Feed._gold_api_get('history', params={'symbol': 'XAU'}, authenticated=True)
+        get.assert_called_once_with(
+            'https://api.gold-api.com/history', params={'symbol': 'XAU'},
+            headers={'x-api-key': 'secret'}, timeout=(5, 10), allow_redirects=False,
+        )
+        for url in ('http://api.gold-api.com', 'https://user:pw@api.gold-api.com', 'ftp://x'):
+            with self.assertRaises(ValidationError):
+                self.env['res.config.settings'].create({'metal_feed_base_url': url})
+
+    def test_api_key_test_button(self):
+        settings = self.env['res.config.settings'].create({'metal_feed_api_key': 'secret'})
+        for status, payload, kind in ((200, {'close': 4000.0}, 'success'),
+                                      (401, {}, 'danger'), (429, {}, 'warning')):
+            response = MagicMock(status_code=status)
+            response.json.return_value = payload
+            with patch(_REQUEST, return_value=response) as get:
+                action = settings.action_metal_feed_test_api_key()
+            self.assertEqual(action['params']['type'], kind)
+            self.assertEqual(get.call_args.kwargs['headers'], {'x-api-key': 'secret'})
+            self.assertTrue(get.call_args.args[0].endswith('/ohlc/XAU'))
+        settings.metal_feed_api_key = False
+        with patch(_REQUEST) as get, self.assertRaises(ValidationError):
+            settings.action_metal_feed_test_api_key()
+        get.assert_not_called()
